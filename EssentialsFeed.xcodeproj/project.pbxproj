@@ -98,9 +98,17 @@
 		9A27ABA6289B5B92003660D3 /* EssentialsFeedTests */ = {
 			isa = PBXGroup;
 			children = (
-				9A27ABAF289B5C27003660D3 /* RemoreFeedLoaderTests.swift */,
+				9A6E01C628A33A5200308E6F /* Feed API */,
 			);
 			path = EssentialsFeedTests;
+			sourceTree = "<group>";
+		};
+		9A6E01C628A33A5200308E6F /* Feed API */ = {
+			isa = PBXGroup;
+			children = (
+				9A27ABAF289B5C27003660D3 /* RemoreFeedLoaderTests.swift */,
+			);
+			path = "Feed API";
 			sourceTree = "<group>";
 		};
 		9AB172FD289C9D7A00D7B4AC /* Feed API */ = {
