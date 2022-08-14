@@ -81,10 +81,26 @@ class URLSessionHTTPCLientTests: XCTestCase {
     
     //MARK: - Helpers
     
+    /// check for potencial memory leaks on sut 
+    /// - Parameters:
+    ///   - instance: sut or class to check for memory leaks
+    ///   - file: file
+    ///   - line: line
+    private func trackForMemoryLeaks(_ instance: AnyObject, file: StaticString = #filePath, line: UInt = #line) {
+        addTeardownBlock { [weak instance] in
+            XCTAssertNil(instance, "Instance should have been dealocated, potencial memory leak", file: file, line: line)
+        }
+    }
+    
     /// creates sut
-    /// - Returns: a class that conforms to HTTPClient protocol  
-    private func makeSUT() -> URLSessionHTTPClient {
-        return URLSessionHTTPClient()
+    /// - Returns: a class that conforms to HTTPClient protocol
+    /// - Parameters:
+    ///   - file: line
+    ///   - line: file
+    private func makeSUT(file: StaticString = #filePath, line: UInt = #line) -> URLSessionHTTPClient {
+        let sut = URLSessionHTTPClient()
+        trackForMemoryLeaks(sut, file: file, line: line)
+        return sut
     }
     
     /// custom subClass of URL protocol to allows intercep and manipulate request without hitting the network
