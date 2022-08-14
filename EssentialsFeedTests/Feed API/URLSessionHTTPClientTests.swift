@@ -48,7 +48,7 @@ class URLSessionHTTPCLientTests: XCTestCase {
             exp.fulfill()
         }
         
-        URLSessionHTTPClient().get(from: url) { _ in }
+        makeSUT().get(from: url) { _ in }
         
         wait(for: [exp], timeout: 1)
     }
@@ -60,11 +60,10 @@ class URLSessionHTTPCLientTests: XCTestCase {
         let error = NSError(domain: "any error", code: 1)
         URLProtocolStub.stub(data: nil, response: nil, error: error)
         
-        let sut = URLSessionHTTPClient()
         
         let exp = expectation(description: "wait for completion")
         
-        sut.get(from: url) { result in
+        makeSUT().get(from: url) { result in
             switch result {
             case let .failure(receivedError as NSError):
                 XCTAssertEqual(receivedError.domain, error.domain)
@@ -81,6 +80,14 @@ class URLSessionHTTPCLientTests: XCTestCase {
     }
     
     //MARK: - Helpers
+    
+    /// creates sut
+    /// - Returns: a class that conforms to HTTPClient protocol  
+    private func makeSUT() -> URLSessionHTTPClient {
+        return URLSessionHTTPClient()
+    }
+    
+    /// custom subClass of URL protocol to allows intercep and manipulate request without hitting the network
     class URLProtocolStub: URLProtocol {
         
         private static var stub: Stub?
