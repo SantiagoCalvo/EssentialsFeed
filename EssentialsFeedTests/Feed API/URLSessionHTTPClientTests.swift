@@ -80,18 +80,7 @@ class URLSessionHTTPCLientTests: XCTestCase {
     }
     
     //MARK: - Helpers
-    
-    /// check for potencial memory leaks on sut 
-    /// - Parameters:
-    ///   - instance: sut or class to check for memory leaks
-    ///   - file: file
-    ///   - line: line
-    private func trackForMemoryLeaks(_ instance: AnyObject, file: StaticString = #filePath, line: UInt = #line) {
-        addTeardownBlock { [weak instance] in
-            XCTAssertNil(instance, "Instance should have been dealocated, potencial memory leak", file: file, line: line)
-        }
-    }
-    
+        
     /// creates sut
     /// - Returns: a class that conforms to HTTPClient protocol
     /// - Parameters:
