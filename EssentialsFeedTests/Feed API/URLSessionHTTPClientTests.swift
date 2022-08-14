@@ -39,7 +39,7 @@ class URLSessionHTTPCLientTests: XCTestCase {
     
     func test_getFromURL_performgetRequestWithURL() {
         
-        let url = URL(string: "http://a-url.com")!
+        let url = anyURL()
         
         let exp = expectation(description: "wait request")
         URLProtocolStub.observeRequests { request in
@@ -56,14 +56,13 @@ class URLSessionHTTPCLientTests: XCTestCase {
     
     func test_getFromURL_failsOnRequestError() {
         
-        let url = URL(string: "http://a-url.com")!
         let error = NSError(domain: "any error", code: 1)
         URLProtocolStub.stub(data: nil, response: nil, error: error)
         
         
         let exp = expectation(description: "wait for completion")
         
-        makeSUT().get(from: url) { result in
+        makeSUT().get(from: anyURL()) { result in
             switch result {
             case let .failure(receivedError as NSError):
                 XCTAssertEqual(receivedError.domain, error.domain)
@@ -90,6 +89,13 @@ class URLSessionHTTPCLientTests: XCTestCase {
         let sut = URLSessionHTTPClient()
         trackForMemoryLeaks(sut, file: file, line: line)
         return sut
+    }
+    
+    
+    /// get any url
+    /// - Returns: anyURL type URL
+    private func anyURL() -> URL {
+        return URL(string: "http://a-url.com")!
     }
     
     /// custom subClass of URL protocol to allows intercep and manipulate request without hitting the network
