@@ -22,7 +22,7 @@ class URLSessionHTTPClient {
         session.dataTask(with: url) { data, response, error in
             if let error = error {
                 completion(.failure(error))
-            } else if let data = data, data.count > 0, let response = response as? HTTPURLResponse {
+            } else if let data = data, let response = response as? HTTPURLResponse {
                 completion(.success(data, response))
             } else {
                 completion(.failure(UnexpectedValuesRepresentation()))
@@ -71,7 +71,6 @@ class URLSessionHTTPCLientTests: XCTestCase {
     func test_getFromURL_failsOnAllInvalidRepresentationCases() {
         XCTAssertNotNil(resultErrorFor(data: nil, response: nil, error: nil))
         XCTAssertNotNil(resultErrorFor(data: nil, response: nonHTTPURLResponse() , error: nil))
-        XCTAssertNotNil(resultErrorFor(data: nil, response: anyHTTPURLResponse(), error: nil))
         XCTAssertNotNil(resultErrorFor(data: anyData(), response: nil, error: nil))
         XCTAssertNotNil(resultErrorFor(data: anyData(), response: nil, error: anyNSError()))
         XCTAssertNotNil(resultErrorFor(data: nil, response: nonHTTPURLResponse() , error: anyNSError()))
@@ -100,7 +99,27 @@ class URLSessionHTTPCLientTests: XCTestCase {
         }
         
         wait(for: [exp], timeout: 1)
+    }
+    
+    func test_getFromURL_succedsWithEmptyOnHTTPURLResponseWithnilData() {
+        let emptyData = Data()
+        let response = anyHTTPURLResponse()
+        URLProtocolStub.stub(data: nil, response: response, error: nil)
         
+        let exp = expectation(description: "wait for response")
+        makeSUT().get(from: anyURL()) { receivedResponse in
+            switch receivedResponse {
+            case let .success(receivedData, receivedHTTPResponse):
+                XCTAssertEqual(receivedData, emptyData)
+                XCTAssertEqual(response.url, receivedHTTPResponse.url)
+                XCTAssertEqual(response.statusCode, receivedHTTPResponse.statusCode)
+            default:
+                XCTFail("expected success with data: \(emptyDataz) but got \(receivedResponse)")
+            }
+            exp.fulfill()
+        }
+        
+        wait(for: [exp], timeout: 1)
     }
     
     //MARK: - Helpers
