@@ -22,6 +22,8 @@ class URLSessionHTTPClient {
         session.dataTask(with: url) { data, response, error in
             if let error = error {
                 completion(.failure(error))
+            } else if let data = data, data.count > 0, let response = response as? HTTPURLResponse {
+                completion(.success(data, response))
             } else {
                 completion(.failure(UnexpectedValuesRepresentation()))
             }
@@ -36,7 +38,7 @@ class URLSessionHTTPCLientTests: XCTestCase {
         URLProtocolStub.startInterceptingRequests()
     }
     
-    override class func tearDown() {
+    override func tearDown() {
         super.tearDown()
         URLProtocolStub.stopInterceptiongRequests()
     }
@@ -77,6 +79,28 @@ class URLSessionHTTPCLientTests: XCTestCase {
         XCTAssertNotNil(resultErrorFor(data: anyData(), response: nonHTTPURLResponse() , error: anyNSError()))
         XCTAssertNotNil(resultErrorFor(data: anyData(), response: anyHTTPURLResponse(), error: anyNSError()))
         XCTAssertNotNil(resultErrorFor(data: anyData(), response: nonHTTPURLResponse() , error: nil))
+    }
+    
+    func test_getFromURL_succedsOnHTTPURLResponseWithData() {
+        let data = anyData()
+        let response = anyHTTPURLResponse()
+        URLProtocolStub.stub(data: data, response: response, error: nil)
+        
+        let exp = expectation(description: "wait for response")
+        makeSUT().get(from: anyURL()) { receivedResponse in
+            switch receivedResponse {
+            case let .success(receivedData, receivedHTTPResponse):
+                XCTAssertEqual(receivedData, data)
+                XCTAssertEqual(response.url, receivedHTTPResponse.url)
+                XCTAssertEqual(response.statusCode, receivedHTTPResponse.statusCode)
+            default:
+                XCTFail("expected success with data: \(data) but got \(receivedResponse)")
+            }
+            exp.fulfill()
+        }
+        
+        wait(for: [exp], timeout: 1)
+        
     }
     
     //MARK: - Helpers
