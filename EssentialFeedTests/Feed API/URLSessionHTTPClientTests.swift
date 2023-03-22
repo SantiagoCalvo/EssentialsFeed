@@ -21,7 +21,7 @@ class URLSessionHTTPClient {
         session.dataTask(with: url) { data, response, error  in
             if let error = error {
                 completion(.failure(error))
-            } else if let data = data, data.count > 0, let response = response as? HTTPURLResponse{
+            } else if let data = data, let response = response as? HTTPURLResponse{
                 completion(.success(data, response))
             }
             else {
@@ -69,7 +69,6 @@ class URLSessionHTTPCLientTests: XCTestCase {
     func test_getFromURL_failsOnAllInvalidRepresentationCases() {
         XCTAssertNotNil(resultErrorFor(data: nil, response: nil, error: nil))
         XCTAssertNotNil(resultErrorFor(data: nil, response: nonHTTPURLReponse(), error: nil))
-        XCTAssertNotNil(resultErrorFor(data: nil, response: anyHTTPURLReponse(), error: nil))
         XCTAssertNotNil(resultErrorFor(data: anyData(), response: nil, error: nil))
         XCTAssertNotNil(resultErrorFor(data: anyData(), response: nil, error: anyNSError()))
         XCTAssertNotNil(resultErrorFor(data: nil, response:  nonHTTPURLReponse(), error: anyNSError()))
@@ -100,6 +99,28 @@ class URLSessionHTTPCLientTests: XCTestCase {
         
         wait(for: [exp], timeout: 1)
     }
+    
+    func test_getFromURL_successWithEmptyDataOnHTTPURLResponseWithNilData() {
+        let response = anyHTTPURLReponse()
+        URLProtocolStub.stub(data: nil, response: response, error: nil)
+        
+        let exp = expectation(description: "wait for completion")
+        makeSUT().get(from: anyURL()) { result in
+            switch result {
+            case let .success(receivedData, receivedHTTPURLResponse):
+                let emptyData = Data()
+                XCTAssertEqual(receivedHTTPURLResponse.url, response.url)
+                XCTAssertEqual(receivedHTTPURLResponse.statusCode, response.statusCode)
+                XCTAssertEqual(receivedData, emptyData)
+            case .failure:
+                XCTFail("expected success got \(result) instead")
+            }
+            exp.fulfill()
+        }
+        
+        wait(for: [exp], timeout: 1)
+    }
+
     
     //MARK: - helpers
     
